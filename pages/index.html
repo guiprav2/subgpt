@@ -80,7 +80,7 @@
             <div class="relative -top-[1px]">{{x}}</div>
             <button
               class="relative -top-[1px] outline-none"
-              wf-onclick="post('main.rmfilter', x)"
+              wf-onclick="post('main.rmFilter', x)"
               value=""
             >
               ×
@@ -104,6 +104,7 @@
               id="taginput"
               wf-onkeyup="post('main.filterKeyUp', event)"
               wf-onblur="post('main.toggleFilterInput')"
+              wf-onattach="_1.select()"
             />
             <div
               class="border p-2 rounded bg-white shadow max-h-48 overflow-auto absolute left-1 right-1 flex flex-col text-sm gap-1 top-[110%]"
@@ -399,7 +400,6 @@
             <div
               class="flex items-center gap-1.5 group flex-wrap mt-3 overflow-auto max-h-[15vh]"
             >
-              <!-- Display current thread tags -->
               <div class="text-sm relative -top-[1px]">
                 {{state.main.thread.tags?.length ? 'Tags:' : 'Tags'}}
               </div>
@@ -410,7 +410,7 @@
                 <div class="relative -top-[1px]">{{x}}</div>
                 <button
                   class="relative -top-[1px] outline-none"
-                  wf-onclick="post('main.rmThreadTag', x)"
+                  wf-onclick="post('main.rmTag', x)"
                   value=""
                 >
                   ×
@@ -419,7 +419,7 @@
               <button
                 class="nf nf-fa-plus text-gray-400 outline-none text-sm px-1 py-0.5"
                 wf-if="!state.main.tmp.showTagInput"
-                wf-onclick="post('main.toggleThreadTagInput')"
+                wf-onclick="post('main.toggleTagInput')"
                 value=""
               ></button>
               <label
@@ -431,9 +431,10 @@
                   placeholder="add tag"
                   class="border px-2 py-0.5 outline-none text-sm rounded-full text-center w-full"
                   id="taginput2"
-                  wf-onkeyup="post('main.threadTagKeyUp', event)"
-                  wf-onblur="setTimeout(() =&gt; post('main.toggleThreadTagInput'), 200)"
+                  wf-onkeyup="post('main.tagKeyUp', event)"
+                  wf-onblur="setTimeout(() =&gt; post('main.toggleTagInput'), 200)"
                   value=""
+                  autocomplete="off"
                 />
                 <div
                   class="border p-2 rounded bg-white shadow max-h-48 overflow-auto absolute left-1 right-1 flex flex-col text-sm gap-1 top-[110%] z-10"
@@ -443,7 +444,7 @@
                   <button
                     class="underline text-blue-600 outline-none"
                     wf-map="x of state.main.tmp.tagSuggestions"
-                    wf-onclick="post('main.addThreadTag', x)"
+                    wf-onclick="post('main.addTag', x)"
                     value=""
                   >
                     {{x}}

@@ -7,13 +7,15 @@ export default class Main {
   state = {
     options: {},
     models: [],
-    get tags() { return [...new Set(...this.threads.flatMap(x => x.tags || []))] },
+    get tags() { return [...new Set(this.threads.flatMap(x => x.tags || []))] },
     threads: [],
     tmp: {},
     get displayedThreads() {
-      if (this.tmp.panel === 'threads') return this.threads.filter(x => !x.archived);
-      if (this.tmp.panel === 'archives') return this.threads.filter(x => x.archived);
-      return [];
+      let ret = [];
+      if (this.tmp.panel === 'threads') ret = this.threads.filter(x => !x.archived);
+      if (this.tmp.panel === 'archives') ret = this.threads.filter(x => x.archived);
+      ret = ret.filter(x => !this.options.filter?.length || (x.tags?.length && this.options.filter.every(y => x.tags.find(z => z.toLowerCase() === y.toLowerCase()))));
+      return ret;
     },
     get displayedLogs() { return this.thread?.logs || [] },
   }
@@ -29,6 +31,47 @@ export default class Main {
     cloneThread: () => alert(),
     toggleShowFilter: () => this.state.tmp.showFilter = !this.state.tmp.showFilter,
     toggleFilterInput: () => this.state.tmp.showFilterInput = !this.state.tmp.showFilterInput,
+    toggleTagInput: () => this.state.tmp.showTagInput = !this.state.tmp.showTagInput,
+    filterKeyUp: async ev => {
+      if (ev.key === 'Escape') {
+        ev.target.value = '';
+        ev.target.blur();
+        this.state.tmp.tagSuggestions = [];
+        !this.state.options.filter.length && (this.state.tmp.showFilter = false);
+        return;
+      }
+      let x = ev.target.value.trim();
+      if (ev.key === 'Enter') {
+        if (!x) { this.state.tagSuggestions = this.state.tags; return }
+        await post('main.filter', x);
+        return;
+      }
+      this.state.tmp.tagSuggestions = this.state.tags.filter(y => y.toLowerCase().includes(x.toLowerCase()) && this.state.options.filter.indexOf(y) === -1);
+    },
+    filter: async x => {
+      if (!this.state.tags.includes(x) || this.state.options.filter.includes(x)) return;
+      this.state.tmp.tagSuggestions = [];
+      document.querySelector('#taginput').value = '';
+      this.state.options.filter.push(x);
+      await post('main.persist');
+    },
+    tagKeyUp: async ev => {
+      if (ev.key === 'Escape') return await post('main.toggleTagInput');
+      if (ev.key !== 'Enter') return;
+      let { thread } = this.state;
+      thread.tags ??= [];
+      thread.tags.push(ev.target.value.trim());
+      ev.target.value = '';
+      await post('main.persist');
+    },
+    rmFilter: async x => {
+      let input = document.querySelector('#taginput');
+      input && (input.value = '');
+      this.state.showFilterInput = false;
+      this.state.options.filter = this.state.options.filter.filter(y => y !== x);
+      !this.state.options.filter.length && (this.state.showFilter = false);
+      await post('main.persist');
+    },
     toggleArchives: (ev, x) => {
       if (x != null) return this.state.tmp.panel = x ? 'archives' : 'threads';
       if (this.state.tmp.panel !== 'archives') this.state.tmp.panel = 'archives';
