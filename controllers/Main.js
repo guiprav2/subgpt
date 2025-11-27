@@ -124,7 +124,11 @@ export default class Main {
       try {
         threadtmp.busy = true;
         d.update();
-        let logs = !this.state.options.unary ? this.state.displayedLogs : [{ role: 'user', content: this.state.displayedLogs.map(x => x.content).join('\n\n') }];
+        let logs = !this.state.options.unary ? [...this.state.displayedLogs] : [{ role: 'user', content: this.state.displayedLogs.map(x => x.content).join('\n\n') }];
+        for (let x of thread.tags?.filter?.(x => x.startsWith('pull:')) || []) {
+          let prime = this.state.threads.filter(y => !y.archived && y.tags?.includes?.(x.slice('pull:'.length)));
+          logs.unshift(...prime.flatMap(x => x.logs));
+        }
         let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
         let res = await complete(logs, { simple: true, model: this.state.options.model, apiKey });
         thread.logs.push(res);
