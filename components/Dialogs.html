@@ -23,7 +23,7 @@
       <div class="text-4xl">GameModeDialog</div>
       <div
         id="GameModeDialog"
-        class="rounded-lg shadow-lg p-4 text-neutral-50 max-w-7xl flex flex-col gap-4 h-[80vh] w-screen bg-neutral-950"
+        class="rounded-lg shadow-lg text-neutral-50 max-w-7xl flex flex-col gap-4 h-[80vh] w-screen bg-neutral-950 p-8"
         wf-onattach="post('game.init')"
       >
         <style>
@@ -31,13 +31,21 @@
             display: inline;
           }
         </style>
-        <div class="text-sm">
-          {{state.game.title}} ({{`${state.game.i + 1} / ${state.game.src.length}`}})
+
+        <div
+          class="text-center text-7xl flex-1 flex justify-center items-center"
+          wf-if="state.game.wait"
+        >
+          <span class="nf nf-fa-star animate-ping"></span>
         </div>
         <div
-          class="scrollarea flex flex-col gap-4 flex-1 overflow-auto text-3xl"
+          class="scrollarea flex flex-col gap-4 flex-1 overflow-auto text-3xl select-none"
           wf-onclick="post('game.next')"
+          wf-if="!state.game.wait"
         ></div>
+        <div class="text-sm text-right">
+          {{state.game.title}} ({{`${state.game.i + 1} / ${state.game.src.length}`}})
+        </div>
       </div>
     </div>
   </body>

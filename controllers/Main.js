@@ -111,6 +111,7 @@ export default class Main {
       if (threadtmp.busy) return;
       let msg = ev.target.value.trim();
       ev.target.value = '';
+      if (msg.trim() === '/play') return showModal('GameModeDialog');
       thread.logs ??= [];
       thread.logs.push({ role: 'user', content: msg });
       d.update();
