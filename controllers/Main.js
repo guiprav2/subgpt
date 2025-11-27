@@ -15,6 +15,7 @@ export default class Main {
       if (this.tmp.panel === 'threads') ret = this.threads.filter(x => !x.archived);
       if (this.tmp.panel === 'archives') ret = this.threads.filter(x => x.archived);
       ret = ret.filter(x => !this.options.filter?.length || (x.tags?.length && this.options.filter.every(y => x.tags.find(z => z.toLowerCase() === y.toLowerCase()))));
+      if (!this.options.showErotica) ret = ret.filter(x => !x.tags?.includes?.('erotica'));
       return ret;
     },
     get displayedLogs() { return this.thread?.logs || [] },
@@ -134,7 +135,7 @@ export default class Main {
         thread.logs.push(res);
         if (thread.logs.length <= 2) {
           threadtmp.busy = false;
-          await post('main.suggestThreadName');
+          !thread.name && await post('main.suggestThreadName');
           this.state.options.autotag && await post('main.suggestThreadTags');
         }
         if (!this.state.threads.includes(thread)) this.state.threads.unshift(thread);
@@ -180,7 +181,7 @@ export default class Main {
               `Suggest a comprehensive comma-separated list of tags ONLY for things mentioned in this thread.`,
               thread.tags?.length && `This is the current tag list: ${thread.tags.join(', ')}.`,
               `Don't repeat existiing tags.`,
-              `If this is sexually charged, make sure to include the tag "erotica".`,
+              `If this is sexually charged, make sure to include the tag "erotica" FIRST.`,
               `Respond with the bare tags, nothing else.`,
               `If the existing list of tags captures everything, respond with a bare "[NONE]".`,
             ],

@@ -944,7 +944,7 @@ function processMutations(muts, observer, di) {
   di.updateSync = di.updateSync || updateSync;
   di.console = di.console || console;
 
-  var i, j, mut, n, b;
+  var i, j, mut, n, b, dirty;
   var newNodes = [],
     orphanedNodes = [];
 
@@ -977,6 +977,7 @@ function processMutations(muts, observer, di) {
     }
 
     di.boundNodes.splice(i, 1);
+    dirty = true;
 
     for (i = 0; i < n.bindings.length; i++) {
       b = n.bindings[i];
@@ -999,6 +1000,7 @@ function processMutations(muts, observer, di) {
     }
 
     di.boundNodes.push(n);
+    dirty = true;
 
     for (i = 0; i < n.bindings.length; i++) {
       b = n.bindings[i];
@@ -1014,7 +1016,7 @@ function processMutations(muts, observer, di) {
     }
   });
 
-  di.updateSync();
+  dirty && di.updateSync();
 }
 
 var observer =
