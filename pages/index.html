@@ -41,26 +41,21 @@
             <button
               class="nf p-1.5 outline-none rounded-full hover:text-gray-800 nf-fa-clone"
               wf-onclick="post('main.cloneThread')"
-              wf-if="state.main.thread.logs.length"
+              wf-if="state.main.thread?.logs?.length"
               value=""
             ></button>
-            <button
-              class="nf p-1.5 outline-none rounded-full hover:text-gray-800 nf-md-qrcode"
-              wf-if="state.main.thread.logs.filter(x =&gt; !x.priming).length"
-              hidden=""
-              value=""
-            ></button>
+
             <button
               class="nf p-1.5 outline-none rounded-full hover:text-gray-800 nf-md-filter_outline"
-              wf-class="{{state.main.tmp.showFilter &amp;&amp; 'bg-gray-200 text-gray-800'}} {{state.main.options.filter.length &amp;&amp; 'text-blue-600 hover:text-blue-600'}}"
-              wf-onclick="post('main.toggleShowFilter', event)"
               wf-if="state.main.displayedThreads.length &amp;&amp; (state.main.options.filter.length || state.main.tags.length)"
               value=""
+              wf-onclick="post('main.toggleShowFilter', event)"
+              wf-class="{{state.main.tmp.showFilter &amp;&amp; 'bg-gray-200 text-gray-800'}} {{state.main.options.filter.length &amp;&amp; 'text-blue-600 hover:text-blue-600'}}"
             ></button>
             <button
               class="nf p-1.5 outline-none rounded-full hover:text-gray-800 nf-md-archive_search"
-              wf-onclick="post('main.toggleArchives', event)"
               wf-class="{{state.main.tmp.panel === 'archives' &amp;&amp; 'bg-gray-200 text-gray-800'}}"
+              wf-onclick="post('main.toggleArchives', event)"
               value=""
             ></button>
             <button
@@ -134,7 +129,6 @@
         </div>
         <div class="mt-2 flex-1" wf-if="state.main.tmp.panel === 'settings'">
           <div>
-            <h3 class="mb-4 text-gray-400 text-right font-medium">Global</h3>
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-1.5">
                 <div>🔑</div>
@@ -227,30 +221,7 @@
                   ></div>
                 </label>
               </div>
-              <div
-                class="flex items-center justify-between mb-4"
-                wf-if="state.main.options.showErotica"
-              >
-                <div class="flex items-center gap-1.5">
-                  <div>🥵</div>
-                  <span class="text-gray-700 text-sm"> Erotica Mode </span>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    class="peer hidden"
-                    wf-checked="state.main.options.erotica"
-                    wf-onchange="post('main.toggleErotica', event)"
-                    value="on"
-                  />
-                  <div
-                    class="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-green-500"
-                  ></div>
-                  <div
-                    class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                  ></div>
-                </label>
-              </div>
+
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-1.5">
                   <div>🎭</div>
@@ -274,55 +245,34 @@
               </div>
             </div>
           </div>
-          <div
-            wf-if="state.main.thread &amp;&amp; state.main.options.showErotica"
-          >
-            <h3 class="mb-4 text-gray-400 text-right font-medium">
-              Current Thread
-            </h3>
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-1.5">
-                <div>🥵</div>
-                <span class="text-gray-700 text-sm"> Erotica Mode </span>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  class="peer hidden"
-                  wf-checked="state.main.thread.tags.includes('erotica')"
-                  wf-onchange="post('main.toggleThreadErotica', event)"
-                  value="on"
-                />
-
-                <div
-                  class="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-green-500"
-                ></div>
-                <div
-                  class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                ></div>
-              </label>
-            </div>
-          </div>
         </div>
         <div
           class="flex-1 flex flex-col justify-center items-center gap-4"
-          wf-if="state.main.tmp.panel === 'threads' &amp;&amp; !state.main.displayedThreads.length"
+          wf-if="state.main.tmp.panel === 'threads' &amp;&amp; !state.main.displayedThreads.length &amp;&amp; !state.main.thread"
         >
           <div class="nf nf-fa-star text-6xl text-gray-300"></div>
           <div class="text-gray-400">Start a new thread!</div>
         </div>
         <div
+          class="flex-1 flex flex-col justify-center items-center gap-4"
+          wf-if="state.main.tmp.panel === 'archives' &amp;&amp; !state.main.displayedThreads.length"
+        >
+          <div class="nf text-6xl text-gray-300 nf-md-delete_empty"></div>
+          <div class="text-gray-400">Archives are empty.</div>
+        </div>
+        <div
           class="flex-1 flex flex-col gap-1.5 min-h-0 overflow-auto basis-0 min-h-10"
           wf-if="state.main.displayedThreads.length"
         >
-          <div wf-map="thread of state.main.displayedThreads" class="">
+          <div class="" wf-map="thread of state.main.displayedThreads">
             <button
               class="rounded-lg border border-[#dfe2e5] bg-white shadow px-3 py-2 flex items-center justify-between group text-sm hover:bg-gray-900 hover:text-white outline-none w-full lightweight"
               wf-onclick="post('main.openThread', thread)"
               value=""
+              wf-class="{{replaces bg-white: state.main.thread !== thread ? 'bg-white' : 'text-white bg-gray-900'}}"
             >
               <div class="flex items-center gap-1.5">
-                <div class="text-left">{{thread.name}}</div>
+                <div class="text-left">{{thread.name || '...'}}</div>
                 <div
                   class="text-base nf nf-md-fire text-gray-400 group-hover:text-gray-300"
                   wf-if="thread.tags?.includes?.('erotica')"
@@ -332,17 +282,17 @@
                 <div
                   class="nf nf-fa-archive hidden group-hover:block text-gray-300 flex justify-center items-center relative top-[1px] hover:text-gray-100"
                   wf-if="!thread.archived"
-                  wf-onclick="post('main.toggleThreadArchived', event, thread)"
+                  wf-onclick="post('main.toggleArchived', event, thread)"
                 ></div>
                 <div
                   class="nf hidden group-hover:block text-gray-300 nf-md-replay flex justify-center items-center hover:text-gray-100"
                   wf-if="thread.archived"
-                  wf-onclick="post('main.toggleThreadArchived', event, thread)"
+                  wf-onclick="post('main.toggleArchived', event, thread)"
                 ></div>
                 <div
                   class="nf hidden group-hover:block text-gray-300 nf-oct-x flex justify-center items-center relative top-[1px] hover:text-gray-100"
                   wf-if="thread.archived"
-                  wf-onclick="post('main.rmThread', event, thread)"
+                  wf-onclick="post('main.rm', event, thread)"
                 ></div>
               </div>
             </button>
@@ -358,8 +308,8 @@
         </button>
         <button
           class="rounded-lg border border-[#dfe2e5] bg-white shadow px-3 py-2 group text-center hover:text-white hover:bg-gray-900 outline-none"
-          wf-if="(state.main.options.oaiKey || state.main.options.xaiKey) &amp;&amp; !state.main.tmp.viewingArchived &amp;&amp; (!state.main.thread || state.main.thread?.logs?.length)"
-          wf-onclick="post('main.createNewThread')"
+          wf-if="(state.main.options.oaiKey || state.main.options.xaiKey) &amp;&amp; state.main.tmp.panel === 'threads' &amp;&amp; (!state.main.thread || state.main.thread?.logs?.length)"
+          wf-onclick="post('main.newThread')"
           value=""
         >
           New Thread
@@ -385,7 +335,7 @@
         </div>
         <div
           class="border-l border-gray-300 flex justify-center items-center py-16 flex-col gap-4 flex-1"
-          wf-if="(state.main.options.oaiKey || state.main.options.xaiKey) &amp;&amp; !state.main.thred"
+          wf-if="(state.main.options.oaiKey || state.main.options.xaiKey) &amp;&amp; !state.main.thread"
           hidden=""
         >
           <div
@@ -415,7 +365,7 @@
                 <div class="flex gap-1">
                   <div
                     class="text-3xl"
-                    wf-if="state.main.thread.tags.includes('erotica')"
+                    wf-if="state.main.thread.tags?.includes?.('erotica')"
                   >
                     🥵
                   </div>
@@ -423,7 +373,7 @@
                 <div class="gap-1 hidden group-hover:flex">
                   <button
                     class="nf text-gray-500 text-xl w-8 h-8 nf-oct-pencil"
-                    wf-if="!state.main.tmp.suggestingName"
+                    wf-if="!state.main.tmp.threads?.get?.(state.main.thread)?.suggestingName"
                     wf-onclick="post('main.renameThread')"
                     value=""
                   ></button>
@@ -437,13 +387,12 @@
                 <div
                   class="nf text-gray-500 text-xl w-8 h-8 flex justify-center items-center nf-fa-spinner animate-spin"
                   wf-onclick="post('main.suggestThreadName')"
-                  wf-if="state.main.threadtmp.suggestingName"
+                  wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.suggestingName"
                   hidden=""
                 ></div>
                 <div
                   class="nf nf-md-chat_processing_outline text-3xl animate-pulse -my-4"
-                  wf-if="state.main.threadtmp.busy || state.main.threadtmp.tw || state.main.threadtmp.wc"
-                  wf-class="{{state.main.reprompt &amp;&amp; 'text-yellow-500'}}"
+                  wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.busy"
                 ></div>
               </div>
             </div>
@@ -504,14 +453,14 @@
               <div class="flex items-center gap-1.5">
                 <button
                   class="nf text-gray-500 nf-md-replay hidden group-hover:block px-1.5 py-0.5 relative -top-[1px] shrink-0"
-                  wf-if="!state.main.threadtmp.showTagInput &amp;&amp; !state.main.threadtmp.suggestingTags"
+                  wf-if="!state.main.tmp.showTagInput &amp;&amp; !state.main.tmp.threads?.get?.(state.main.thread)?.suggestingTags"
                   wf-onclick="post('main.suggestThreadTags')"
                   value=""
                 ></button>
                 <div
                   class="nf text-gray-500 text-xl flex justify-center items-center nf-fa-spinner animate-spin h-[1em]"
                   wf-onclick="post('main.suggestThreadName')"
-                  wf-if="state.main.threadtmp.suggestingTags"
+                  wf-if="state.main.tmp.threads?.get(state.main.thread)?.suggestingTags"
                   hidden=""
                 ></div>
               </div>
@@ -554,7 +503,7 @@
                   >
                     <div class="flex-1 flex flex-col">
                       <div
-                        wf-if="state.main.threadtmp.editing?.log !== log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log !== log"
                         wf-innerhtml="markdown(Array.isArray(log.content) ? log.content[0].text : log.content)"
                         class="flex flex-col gap-3"
                       >
@@ -569,7 +518,7 @@
                       />
                       <textarea
                         class="bg-transparent outline-none resize-none h-[1.5em] w-full"
-                        wf-if="state.main.threadtmp.editing?.log === log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log"
                         autofocus=""
                         wf-onattach="post('main.msgAutoSize', { target: _1 })"
                         wf-oninput="post('main.msgAutoSize', event)"
@@ -583,25 +532,25 @@
                     >
                       <button
                         class="nf nf-oct-pencil outline-none p-1"
-                        wf-if="state.main.tmp.editing?.log !== log &amp;&amp; !Array.isArray(log.content)"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log !== log &amp;&amp; !Array.isArray(log.content)"
                         wf-onclick="post('main.edit', log)"
                         value=""
                       ></button
                       ><button
                         class="nf outline-none nf-md-replay"
-                        wf-if="state.main.tmp.editing?.log === log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log"
                         wf-onclick="post('main.replay', log)"
                         value=""
                       ></button
                       ><button
                         class="nf outline-none nf-fa-check"
-                        wf-if="state.main.tmp.editing?.log === log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log"
                         wf-onclick="post('main.save', log)"
                         value=""
                       ></button
                       ><button
                         class="nf outline-none nf-oct-x"
-                        wf-onclick="post(state.main.tmp.editing?.log === log ? 'main.revert' : 'main.rm', event, log)"
+                        wf-onclick="post(state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log ? 'main.revert' : 'main.rm', event, log)"
                         value=""
                       ></button>
                     </div>
@@ -612,7 +561,7 @@
                   >
                     <div class="flex-1 flex flex-col">
                       <div
-                        wf-if="state.main.threadtmp.editing?.log !== log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log !== log"
                         wf-innerhtml="markdown(log.content)"
                         class="flex flex-col gap-3"
                       >
@@ -621,7 +570,7 @@
 
                       <textarea
                         class="bg-transparent outline-none resize-none h-[1.5em] w-full"
-                        wf-if="state.main.threadtmp.editing?.log === log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log"
                         wf-onattach="post('main.msgAutoSize', { target: _1 })"
                         wf-oninput="post('main.msgAutoSize', event)"
                         value=""
@@ -638,19 +587,19 @@
                       >
                         <button
                           class="nf nf-oct-pencil outline-none p-1"
-                          wf-if="state.main.tmp.editing?.log !== log"
+                          wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log !== log"
                           wf-onclick="post('main.edit', log)"
                           value=""
                         ></button
                         ><button
                           class="nf outline-none nf-fa-check"
-                          wf-if="state.main.tmp.editing?.log === log"
+                          wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log"
                           wf-onclick="post('main.save', log)"
                           value=""
                         ></button
                         ><button
                           class="nf outline-none nf-oct-x"
-                          wf-onclick="post(state.main.tmp.editing?.log === log ? 'main.revert' : 'main.rm', event, log)"
+                          wf-onclick="post(state.main.tmp.threads?.get?.(state.main.thread)?editing?.log === log ? 'main.revert' : 'main.rm', event, log)"
                           value=""
                         ></button>
                       </div>
@@ -668,9 +617,9 @@
             <textarea
               class="flex-1 bg-transparent outline-none resize-none p-4 sm:pr-4 pr-16 max-h-[10rem] h-[3.25rem]"
               placeholder="Type a message"
-              wf-onkeydown="rawctrls.main.actions.msgKeyDown(event)"
               wf-onkeyup="rawctrls.main.actions.msgKeyUp(event)"
               value=""
+              wf-onkeydown="rawctrls.main.actions.msgKeyDown(event)"
             ></textarea>
             <div
               class="self-stretch flex border-l border-[#dfe2e5] relative items-center"
