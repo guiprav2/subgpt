@@ -115,7 +115,7 @@ export default class Main {
       d.update();
       await post('main.complete');
     },
-    complete: async (logs = this.state.displayedLogs) => {
+    complete: async () => {
       let { thread } = this.state;
       this.state.tmp.threads ??= new Map();
       if (!this.state.tmp.threads.get(thread)) this.state.tmp.threads.set(thread, {});
@@ -125,9 +125,55 @@ export default class Main {
         threadtmp.busy = true;
         d.update();
         let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
-        let res = await complete(logs, { simple: true, model: this.state.options.model, apiKey });
+        let res = await complete(this.state.displayedLogs, { simple: true, model: this.state.options.model, apiKey });
         thread.logs.push(res);
+        if (thread.logs.length <= 2) {
+          threadtmp.busy = false;
+          await post('main.suggestThreadName');
+          this.state.options.autotag && await post('main.suggestThreadTags');
+        }
         if (!this.state.threads.includes(thread)) this.state.threads.unshift(thread);
+        await post('main.persist');
+      } finally {
+        threadtmp.busy = false;
+      }
+    },
+    suggestThreadName: async () => {
+      let { thread } = this.state;
+      this.state.tmp.threads ??= new Map();
+      if (!this.state.tmp.threads.get(thread)) this.state.tmp.threads.set(thread, {});
+      let threadtmp = this.state.tmp.threads.get(thread);
+      if (threadtmp.busy) throw new Error(`Thread busy`);
+      try {
+        threadtmp.busy = true;
+        d.update();
+        let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
+        let res = await complete(
+          [...this.state.displayedLogs, { role: 'user', content: `Suggest a short name for this thread. Respond with the bare name, nothing else.` }],
+          { simple: true, model: this.state.options.model, apiKey },
+        );
+        thread.name = res.content;
+        await post('main.persist');
+      } finally {
+        threadtmp.busy = false;
+      }
+    },
+    suggestThreadTags: async () => {
+      let { thread } = this.state;
+      this.state.tmp.threads ??= new Map();
+      if (!this.state.tmp.threads.get(thread)) this.state.tmp.threads.set(thread, {});
+      let threadtmp = this.state.tmp.threads.get(thread);
+      if (threadtmp.busy) throw new Error(`Thread busy`);
+      try {
+        threadtmp.busy = true;
+        d.update();
+        let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
+        let res = await complete(
+          [...this.state.displayedLogs, { role: 'user', content: `Suggest a comprehensive comma-separated list of tags for this thread. Respond with the bare tags, nothing else.` }],
+          { simple: true, model: this.state.options.model, apiKey },
+        );
+        thread.tags ??= [];
+        for (let x of res.content.split(',').map(x => x.trim().toLowerCase().replaceAll(/[ _]+/g, '-'))) !thread.tags.includes(x) && thread.tags.push(x);
         await post('main.persist');
       } finally {
         threadtmp.busy = false;
