@@ -221,6 +221,11 @@ export default class Main {
         threadtmp.busy = false;
       }
     },
+    toggleGameModeLog: async x => {
+      if (!x.gameMode) x.gameMode = true;
+      else delete x.gameMode;
+      await post('main.persist');
+    },
     editLog: x => {
       let { thread } = this.state;
       this.state.tmp.threads ??= new Map();

@@ -9,7 +9,8 @@ export default class Game {
       let { thread } = state.main;
       if (this.state.thread === thread) return;
       this.state.thread = thread;
-      this.state.src = thread.logs.filter(x => x.role === 'assistant').flatMap(x => x.content.split('\n')).map(x => (x.length >= 20 || !/page|paragraph/i.test(x)) ? x : `# ${x}`).filter(x => x.trim());
+      let logs = thread.logs.some(x => x.gameMode) ? thread.logs.filter(x => x.gameMode) : thread.logs;
+      this.state.src = logs.filter(x => x.role === 'assistant').flatMap(x => x.content.split('\n')).map(x => (x.length >= 20 || !/page|paragraph/i.test(x)) ? x : `# ${x}`).filter(x => x.trim());
       this.state.i = this.state.j = 0;
       this.state.wait = true;
       d.update();
@@ -43,7 +44,17 @@ export default class Game {
             this.state.i++;
             d.update();
             let clear = !!scrollarea.textContent.trim();
-            if (clear) { scrollarea.innerHTML = ''; this.state.wait = true; d.update(); await new Promise(pres => setTimeout(pres, 3000)); this.state.wait = false; d.update() }
+            this.state.i++;
+            x = this.state.src[this.state.i];
+            this.state.j = 0;
+            if (clear) {
+              scrollarea.innerHTML = '';
+              this.state.wait = true;
+              d.update();
+              await new Promise(pres => setTimeout(pres, 3000));
+              this.state.wait = false;
+              d.update();
+            }
             x = this.state.src[this.state.i]
             this.state.j = 0;
             if (!x) return;
