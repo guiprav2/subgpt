@@ -183,6 +183,35 @@ export default class Main {
         threadtmp.busy = false;
       }
     },
+    editLog: x => {
+      let { thread } = this.state;
+      this.state.tmp.threads ??= new Map();
+      if (!this.state.tmp.threads.get(thread)) this.state.tmp.threads.set(thread, {});
+      let threadtmp = this.state.tmp.threads.get(thread);
+      threadtmp.editing = x;
+      threadtmp.editingContent = x.content;
+      console.log(threadtmp);
+    },
+    saveLog: async x => {
+      let { thread } = this.state;
+      let threadtmp = this.state.tmp.threads.get(thread);
+      x.content = threadtmp.editingContent;
+      delete threadtmp.editing;
+      delete threadtmp.editingContent;
+      await post('main.persist');
+    },
+    revertLog: async x => {
+      let { thread } = this.state;
+      let threadtmp = this.state.tmp.threads.get(thread);
+      delete threadtmp.editing;
+      delete threadtmp.editingContent;
+    },
+    rmLog: async x => {
+      let { thread } = this.state;
+      let i = thread.logs.indexOf(x);
+      i >= 0 && thread.logs.splice(i, 1);
+      await post('main.persist');
+    },
     toggleArchived: async (ev, x) => {
       ev?.stopPropagation?.();
       x.archived = !x.archived;
