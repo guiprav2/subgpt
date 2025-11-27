@@ -398,10 +398,10 @@
               </div>
             </div>
             <div
-              class="flex items-center gap-1.5 group flex-wrap mt-3 overflow-auto max-h-[15vh]"
+              class="flex items-center gap-1.5 group flex-wrap mt-3 max-h-[15vh]"
             >
               <div class="text-sm relative -top-[1px]">
-                {{state.main.thread.tags?.length ? 'Tags:' : 'Tags'}}
+                {{state.main.thread.tags?.length || state.main.tmp.showTagInput ? 'Tags:' : 'Tags'}}
               </div>
               <div
                 class="text-sm px-2 py-0.5 rounded-full shrink-0 flex items-center gap-2 bg-green-200 text-green-600"
@@ -435,6 +435,7 @@
                   wf-onblur="setTimeout(() =&gt; post('main.toggleTagInput'), 200)"
                   value=""
                   autocomplete="off"
+                  autofocus=""
                 />
                 <div
                   class="border p-2 rounded bg-white shadow max-h-48 overflow-auto absolute left-1 right-1 flex flex-col text-sm gap-1 top-[110%] z-10"

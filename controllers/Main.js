@@ -55,21 +55,33 @@ export default class Main {
       this.state.options.filter.push(x);
       await post('main.persist');
     },
-    tagKeyUp: async ev => {
-      if (ev.key === 'Escape') return await post('main.toggleTagInput');
-      if (ev.key !== 'Enter') return;
-      let { thread } = this.state;
-      thread.tags ??= [];
-      thread.tags.push(ev.target.value.trim());
-      ev.target.value = '';
-      await post('main.persist');
-    },
     rmFilter: async x => {
       let input = document.querySelector('#taginput');
       input && (input.value = '');
       this.state.showFilterInput = false;
       this.state.options.filter = this.state.options.filter.filter(y => y !== x);
       !this.state.options.filter.length && (this.state.showFilter = false);
+      await post('main.persist');
+    },
+    tagKeyUp: async ev => {
+      if (ev.key === 'Escape') return await post('main.toggleTagInput');
+      if (ev.key !== 'Enter') {
+        this.state.tmp.tagSuggestions = ev.target.value.trim() ? this.state.tags.filter(x => x.toLowerCase().includes(ev.target.value.trim().toLowerCase())) : [];
+        return;
+      }
+      await post('main.addTag', ev.target.value);
+      ev.target.value = '';
+    },
+    addTag: async x => {
+      let { thread } = this.state;
+      thread.tags ??= [];
+      thread.tags.push(x);
+      await post('main.persist');
+    },
+    rmTag: async x => {
+      let { thread } = this.state;
+      let i = thread.tags.indexOf(x);
+      i >= 0 && thread.tags.splice(i, 1);
       await post('main.persist');
     },
     toggleArchives: (ev, x) => {
