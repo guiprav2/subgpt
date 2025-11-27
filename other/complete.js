@@ -41,7 +41,7 @@ export default async function complete(logs, { model, apiKey, n, rolemap, tools,
   let messages = logs.map(x => {
     if (!rolemap || /system|assistant|user/.test(x.role)) return { ...x, tools: undefined };
     return { role: null, ...x, role: rolemap[x.role], tools: undefined };
-  }).filter(x => x.role !== 'drop');
+  }).filter(x => x.role !== 'drop').map(x => ({ ...x, content: Array.isArray(x.content) ? x.content.filter(Boolean).join('\n') : x.content }));
   let tries = 1;
   if (choice === 'required') messages.unshift({ role: 'system', content: `Tool calling is MANDATORY.` });
   switch (provider) {

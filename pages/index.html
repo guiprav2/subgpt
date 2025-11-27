@@ -538,25 +538,25 @@
                     >
                       <button
                         class="nf nf-oct-pencil outline-none p-1"
-                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log !== log &amp;&amp; !Array.isArray(log.content)"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing !== log &amp;&amp; !Array.isArray(log.content)"
                         wf-onclick="post('main.editLog', log)"
                         value=""
                       ></button
                       ><button
                         class="nf outline-none nf-md-replay"
-                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing === log"
                         wf-onclick="post('main.replayLog', log)"
                         value=""
                       ></button
                       ><button
                         class="nf outline-none nf-fa-check"
-                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log"
+                        wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing === log"
                         wf-onclick="post('main.saveLog', log)"
                         value=""
                       ></button
                       ><button
                         class="nf outline-none nf-oct-x"
-                        wf-onclick="post(state.main.tmp.threads?.get?.(state.main.thread)?.editing?.log === log ? 'main.revertLog' : 'main.rmLog', log)"
+                        wf-onclick="post(state.main.tmp.threads?.get?.(state.main.thread)?.editing === log ? 'main.revertLog' : 'main.rmLog', log)"
                         value=""
                       ></button>
                     </div>

@@ -169,17 +169,49 @@ export default class Main {
         threadtmp.busy = true;
         d.update();
         let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
-        let res = await complete(
+        let addRes = await complete(
           [...this.state.displayedLogs, {
             role: 'user',
-            content: `Suggest a comprehensive comma-separated list of tags for this thread. If this is sexually charged, make sure to include the tag "erotica". Respond with the bare tags, nothing else.`,
+            content: [
+              `Suggest a comprehensive comma-separated list of tags ONLY for things mentioned in this thread.`,
+              thread.tags?.length && `This is the current tag list: ${thread.tags.join(', ')}.`,
+              `Don't repeat existiing tags.`,
+              `If this is sexually charged, make sure to include the tag "erotica".`,
+              `Respond with the bare tags, nothing else.`,
+              `If the existing list of tags captures everything, respond with a bare "[NONE]".`,
+            ],
           }],
           { simple: true, model: this.state.options.model, apiKey },
         );
-        thread.tags ??= [];
-        for (let x of res.content.split(',').map(x => x.trim().toLowerCase().replaceAll(/[ _]+/g, '-'))) !thread.tags.includes(x) && thread.tags.push(x);
-        await post('main.persist');
+        console.log('addRes:', addRes.content);
+        if (!addRes.content.includes('[NONE]')) {
+          thread.tags ??= [];
+          for (let x of addRes.content.split(',').map(x => x.trim().toLowerCase().replaceAll(/[ _]+/g, '-'))) !thread.tags.includes(x) && thread.tags.push(x);
+        }
+        d.update();
+        /* FIXME:
+        if (!thread.tags.length) return;
+        let rmRes = await complete(
+          [...this.state.displayedLogs, {
+            role: 'user',
+            content: [
+              `Suggest a comprehensive comma-separated list of the following tags irrelevant to this thread (e.g. not explicitly mentioned anywhere outside the following list): ${thread.tags.join(', ')}`,
+              `Respond with the bare tags, nothing else.`,
+              `Only if all tags are relevant, respond with a bare "[NONE]".`,
+            ],
+          }],
+          { simple: true, model: 'xai:grok-4-1-fast-reasoning', apiKey },
+        );
+        console.log('rmRes:', rmRes.content);
+        if (!rmRes.content.includes('[NONE]')) {
+          for (let x of rmRes.content.split(',').map(x => x.trim().toLowerCase().replaceAll(/[ _]+/g, '-'))) {
+            let i = thread.tags.indexOf(x);
+            i >= 0 && thread.tags.splice(i, 1);
+          }
+        }
+        */
       } finally {
+        await post('main.persist');
         threadtmp.busy = false;
       }
     },
@@ -221,6 +253,7 @@ export default class Main {
       ev?.stopPropagation?.();
       let i = this.state.threads.indexOf(x);
       i >= 0 && this.state.threads.splice(i, 1);
+      if (this.state.thread === x) this.state.thread = null;
       await post('main.persist');
     },
     persist: () => {
