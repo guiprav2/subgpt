@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dialogs.html</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <script>
+      window.rootPrefix = /^\/(files|preview)\//.test(location.pathname)
+        ? location.pathname.split('/').slice(0, 4).join('/')
+        : '/';
+    </script>
+    <script type="module" src="../webfoundry/ifdesigner.js"></script>
+    <script src="../webfoundry/head.js"></script>
+  </head>
+  <body
+    class="flex flex-col [&amp;&gt;div:first-child]:flex-1 min-h-screen"
+    style="display: none"
+  >
+    <div class="p-16 flex flex-col gap-6">
+      <div class="text-4xl">GameModeDialog</div>
+      <div
+        id="GameModeDialog"
+        class="rounded-lg shadow-lg p-4 text-neutral-50 max-w-7xl flex flex-col gap-4 h-[80vh] w-screen bg-neutral-950"
+        wf-onattach="post('game.init')"
+      >
+        <style>
+          #GameModeDialog p {
+            display: inline;
+          }
+        </style>
+        <div class="text-sm">
+          {{state.game.title}} ({{`${state.game.i + 1} / ${state.game.src.length}`}})
+        </div>
+        <div
+          class="scrollarea flex flex-col gap-4 flex-1 overflow-auto text-3xl"
+          wf-onclick="post('game.next')"
+        ></div>
+      </div>
+    </div>
+  </body>
+</html>
