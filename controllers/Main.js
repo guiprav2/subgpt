@@ -124,8 +124,9 @@ export default class Main {
       try {
         threadtmp.busy = true;
         d.update();
+        let logs = !this.state.options.unary ? this.state.displayedLogs : [{ role: 'user', content: this.state.displayedLogs.map(x => x.content).join('\n\n') }];
         let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
-        let res = await complete(this.state.displayedLogs, { simple: true, model: this.state.options.model, apiKey });
+        let res = await complete(logs, { simple: true, model: this.state.options.model, apiKey });
         thread.logs.push(res);
         if (thread.logs.length <= 2) {
           threadtmp.busy = false;
@@ -169,7 +170,10 @@ export default class Main {
         d.update();
         let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
         let res = await complete(
-          [...this.state.displayedLogs, { role: 'user', content: `Suggest a comprehensive comma-separated list of tags for this thread. Respond with the bare tags, nothing else.` }],
+          [...this.state.displayedLogs, {
+            role: 'user',
+            content: `Suggest a comprehensive comma-separated list of tags for this thread. If this is sexually charged, make sure to include the tag "erotica". Respond with the bare tags, nothing else.`,
+          }],
           { simple: true, model: this.state.options.model, apiKey },
         );
         thread.tags ??= [];
