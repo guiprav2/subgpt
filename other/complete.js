@@ -36,7 +36,7 @@ let cfg = {
 };
 
 export default async function complete(logs, { model, apiKey, n, rolemap, tools, choice, simple, signal } = {}) {
-  let provmod = (model || 'xai:grok-2').split(':');
+  let provmod = (model || 'xai:grok-4-1-fast-non-reasoning').split(':');
   let provider = provmod[0];
   model = provmod[1];
   let { endpoint } = cfg[provider];
@@ -44,7 +44,7 @@ export default async function complete(logs, { model, apiKey, n, rolemap, tools,
   let messages = logs.map(x => {
     if (!rolemap || /system|assistant|user/.test(x.role)) return { ...x, tools: undefined };
     return { role: null, ...x, role: rolemap[x.role], tools: undefined };
-  }).filter(x => x.role !== 'drop').map(x => ({ ...x, content: Array.isArray(x.content) ? x.content.filter(Boolean).join('\n') : x.content }));
+  }).filter(x => x.role !== 'drop').map(x => ({ role: x.role, content: Array.isArray(x.content) ? x.content.filter(Boolean).join('\n') : x.content }));
   let tries = 1;
   if (choice === 'required') messages.unshift({ role: 'system', content: `Tool calling is MANDATORY.` });
   switch (provider) {
