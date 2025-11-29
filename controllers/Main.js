@@ -37,7 +37,7 @@ export default class Main {
       try { this.state.models = await listModels({ oaiKey: this.state.options.oaiKey, xaiKey: this.state.options.xaiKey }) }
       finally { this.state.tmp.loadingModels = false }
     },
-    newThread: () => this.state.thread = {},
+    newThread: () => this.state.thread = { id: crypto.randomUUID() },
     openThread: x => this.state.thread = x,
     scroll: debounce(x => {
       let p = x.parentElement;
@@ -143,7 +143,7 @@ export default class Main {
       ev.target.value = '';
       if (msg.trim() === '/play') return showModal('GameModeDialog');
       thread.logs ??= [];
-      thread.logs.push({ role: 'user', content: msg });
+      thread.logs.push({ id: crypto.randomUUID(), role: 'user', content: msg });
       d.update();
       await post('main.complete');
     },
@@ -165,7 +165,7 @@ export default class Main {
         }
         let apiKey = this.state.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
         let res = await complete(logs, { simple: true, model: this.state.model, apiKey });
-        thread.logs.push(res);
+        thread.logs.push({ id: null, res, id: crypto.randomUUID() });
         if (thread.logs.length <= 2) {
           threadtmp.busy = false;
           !thread.name && await post('main.suggestThreadName');
