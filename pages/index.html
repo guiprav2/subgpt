@@ -644,50 +644,31 @@
               wf-onkeydown="rawctrls.main.actions.msgKeyDown(event)"
             ></textarea>
             <div
-              class="self-stretch flex border-l border-[#dfe2e5] relative items-center"
-              wf-if="state.main.models.length || state.main.loadingModels"
+              class="self-stretch flex border-l border-[#dfe2e5] relative items-center group"
+              wf-if="state.main.models.length || state.main.tmp.loadingModels"
             >
               <div
                 class="absolute bottom-[100%] right-0 pb-2 min-w-64"
-                wf-if="state.main.showModels"
+                wf-if="state.main.tmp.showModels"
                 id="modellist"
                 hidden=""
               >
                 <div
-                  class="border p-2 rounded bg-white shadow max-h-48 overflow-auto left-1 right-1 flex flex-col text-sm gap-1 z-10"
+                  class="border p-2 rounded bg-white shadow max-h-48 overflow-auto left-1 right-1 flex flex-col text-sm gap-1 z-10 border-slate-300"
                 >
-                  <div class="flex flex-col gap-0.5">
-                    <div
-                      class="text-[11px] uppercase tracking-[0.2em] text-gray-400 mt-1"
-                    >
-                      xAI
-                    </div>
-                    <button
-                      class="underline text-blue-600 outline-none text-left"
-                      wf-onclick="post('main.changeModel', 'xai:xai-latest')"
-                      value=""
-                    >
-                      xAI · xai-latest
-                    </button>
-                  </div>
-                  <div
-                    class="flex flex-col gap-0.5"
+                  <button
+                    class="text-blue-600 outline-none flex justify-between items-center gap-3 text-left"
+                    wf-onclick="post('main.changeModel', x.id)"
+                    value=""
                     wf-map="x of state.main.models"
                   >
+                    <div class="underline">{{x.id.split(':')[1]}}</div>
                     <div
-                      class="text-[11px] uppercase tracking-[0.2em] text-gray-400 mt-2"
-                      wf-if="x.heading"
+                      class="text-sm truncate max-w-24 decoration-none text-slate-500 shrink-0"
                     >
-                      {{x.heading}}
+                      {{new Date(x.created * 1000).toLocaleString('en-US', { month: 'short', year: 'numeric' })}}
                     </div>
-                    <button
-                      class="underline text-blue-600 outline-none text-left"
-                      wf-onclick="post('main.changeModel', x.value)"
-                      value=""
-                    >
-                      {{x.label || x.value}}
-                    </button>
-                  </div>
+                  </button>
                 </div>
               </div>
               <button
@@ -696,13 +677,18 @@
                 wf-onclick="post('main.toggleShowModels')"
                 value=""
               >
-                {{state.main.options.providerLabel || state.main.options.model}}
+                {{state.main.model.split(':')[1]}}
               </button>
               <div
                 class="nf text-gray-500 text-xl w-8 h-8 flex justify-center items-center nf-fa-spinner animate-spin mx-4"
                 wf-onclick="post('main.suggestThreadName')"
-                wf-if="state.main.loadingModels"
+                wf-if="state.main.tmp.loadingModels"
                 hidden=""
+              ></div>
+              <div
+                class="nf text-gray-500 text-xl w-8 h-8 justify-center items-center mx-4 nf-weather-refresh hidden group-hover:flex"
+                wf-onclick="post('main.listModels')"
+                wf-if="!state.main.tmp.loadingModels"
               ></div>
             </div>
           </div>

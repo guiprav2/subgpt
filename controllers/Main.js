@@ -1,4 +1,4 @@
-import complete from '../other/complete.js';
+import complete, { listModels } from '../other/complete.js';
 import { marked } from 'https://esm.sh/marked';
 
 globalThis.markdown = x => marked.parse(x);
@@ -7,6 +7,7 @@ export default class Main {
   state = {
     options: {},
     models: [],
+    get model() { return this.options.model || this.models[0]?.id },
     get tags() { return [...new Set(this.threads.flatMap(x => x.tags || []))] },
     threads: [],
     tmp: {},
@@ -22,10 +23,18 @@ export default class Main {
   }
   actions = {
     init: async () => {
-      this.state.options = JSON.parse(localStorage.getItem('subgpt:options') || 'null') || { model: 'xai:grok-4-1-fast-non-reasoning', filter: [], autotag: true };
+      this.state.options = JSON.parse(localStorage.getItem('subgpt:options') || 'null') || { model: null, filter: [], autotag: true };
       this.state.threads = JSON.parse(localStorage.getItem('subgpt:threads') || '[]');
       await post('main.persist');
       this.state.tmp.panel = this.state.options.oaiKey || this.state.options.xaiKey ? 'threads' : 'settings';
+      await post('main.listModels');
+    },
+    listModels: async () => {
+      this.state.models = [];
+      this.state.tmp.loadingModels = true;
+      d.update();
+      try { this.state.models = await listModels({ oaiKey: this.state.options.oaiKey, xaiKey: this.state.options.xaiKey }) }
+      finally { this.state.tmp.loadingModels = false }
     },
     newThread: () => this.state.thread = {},
     openThread: x => this.state.thread = x,
@@ -132,6 +141,8 @@ export default class Main {
       d.update();
       await post('main.complete');
     },
+    toggleShowModels: () => this.state.tmp.showModels = !this.state.tmp.showModels,
+    changeModel: async x => { this.state.model = x; this.state.tmp.showModels = false; await post('main.persist') },
     complete: async () => {
       let { thread } = this.state;
       this.state.tmp.threads ??= new Map();
@@ -146,8 +157,8 @@ export default class Main {
           let prime = this.state.threads.filter(y => !y.archived && y.tags?.includes?.(x.slice('pull:'.length)));
           logs.unshift(...prime.flatMap(x => x.logs));
         }
-        let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
-        let res = await complete(logs, { simple: true, model: this.state.options.model, apiKey });
+        let apiKey = this.state.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
+        let res = await complete(logs, { simple: true, model: this.state.model, apiKey });
         thread.logs.push(res);
         if (thread.logs.length <= 2) {
           threadtmp.busy = false;
@@ -169,10 +180,10 @@ export default class Main {
       try {
         threadtmp.busy = true;
         d.update();
-        let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
+        let apiKey = this.state.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
         let res = await complete(
           [...this.state.displayedLogs, { role: 'user', content: `Suggest a short name for this thread. Respond with the bare name, nothing else.` }],
-          { simple: true, model: this.state.options.model, apiKey },
+          { simple: true, model: this.state.model, apiKey },
         );
         thread.name = res.content;
         await post('main.persist');
@@ -189,7 +200,7 @@ export default class Main {
       try {
         threadtmp.busy = true;
         d.update();
-        let apiKey = this.state.options.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
+        let apiKey = this.state.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
         let addRes = await complete(
           [...this.state.displayedLogs, {
             role: 'user',
@@ -202,7 +213,7 @@ export default class Main {
               `If the existing list of tags captures everything, respond with a bare "[NONE]".`,
             ],
           }],
-          { simple: true, model: this.state.options.model, apiKey },
+          { simple: true, model: this.state.model, apiKey },
         );
         console.log('addRes:', addRes.content);
         if (!addRes.content.includes('[NONE]')) {

@@ -20,14 +20,17 @@ function resolve(x) {
 let cfg = {
   oai: {
     endpoint: 'https://api.openai.com/v1/responses',
+    modelsEndpoint: 'https://api.openai.com/v1/models',
     apiKey: globalThis.process?.env?.OPENAI_API_KEY,
   },
   oail: {
     endpoint: 'https://api.openai.com/v1/chat/completions',
+    modelsEndpoint: 'https://api.openai.com/v1/models',
     apiKey: globalThis.process?.env?.OPENAI_API_KEY,
   },
   xai: {
     endpoint: 'https://api.x.ai/v1/chat/completions',
+    modelsEndpoint: 'https://api.x.ai/v1/models',
     apiKey: globalThis.process?.env?.XAI_KEY,
   },
 };
@@ -62,10 +65,7 @@ export default async function complete(logs, { model, apiKey, n, rolemap, tools,
       let payload = { model, input: messages, tools: ctools, tool_choice: cchoice };
       let res = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         signal,
       });
@@ -225,4 +225,33 @@ export default async function complete(logs, { model, apiKey, n, rolemap, tools,
       }
     }
   }
+};
+
+export async function listModels({ oaiKey, xaiKey }) {
+  let models = [];
+  try {
+    oaiKey ??= cfg.oai.apiKey;
+    if (oaiKey) {
+      let res = await fetch(cfg.oai.modelsEndpoint, {
+        headers: { Authorization: `Bearer ${oaiKey}`, 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error(`OpenAI list models error: ${JSON.stringify(await res.json(), null, 2)}`);
+      for (let x of (await res.json()).data || []) models.push({ id: `${x.created >= 1754073306 ? 'oai' : 'oail'}:${x.id}`, created: x.created });
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  try {
+    xaiKey ??= cfg.xai.apiKey;
+    if (xaiKey) {
+      let res = await fetch(cfg.xai.modelsEndpoint, {
+        headers: { Authorization: `Bearer ${xaiKey}`, 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error(`xAI list models error: ${JSON.stringify(await res.json(), null, 2)}`);
+      for (let x of (await res.json()).data || []) models.push({ id: `xai:${x.id}`, created: x.created });
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  return models.sort((a, b) => b.created - a.created);
 };
