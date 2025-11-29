@@ -29,7 +29,15 @@ export default class Main {
     },
     newThread: () => this.state.thread = {},
     openThread: x => this.state.thread = x,
-    cloneThread: () => alert(),
+    cloneThread: async () => {
+      let { thread } = this.state;
+      let [btn, name] = await showModal('PromptDialog', { title: `Clone Thread`, placeholder: `New thread name`, value: thread.name, allowEmpty: false });
+      if (btn !== 'ok') return;
+      thread = { name: null, ...thread, name };
+      this.state.threads.unshift(thread);
+      this.state.thread = thread;
+      await post('main.persist');
+    },
     toggleShowFilter: () => this.state.tmp.showFilter = !this.state.tmp.showFilter,
     toggleFilterInput: () => this.state.tmp.showFilterInput = !this.state.tmp.showFilterInput,
     toggleTagInput: () => this.state.tmp.showTagInput = !this.state.tmp.showTagInput,
@@ -62,6 +70,13 @@ export default class Main {
       this.state.showFilterInput = false;
       this.state.options.filter = this.state.options.filter.filter(y => y !== x);
       !this.state.options.filter.length && (this.state.showFilter = false);
+      await post('main.persist');
+    },
+    renameThread: async () => {
+      let { thread } = this.state;
+      let [btn, name] = await showModal('PromptDialog', { title: `Rename Thread`, placeholder: `New thread name`, value: thread.name, allowEmpty: false });
+      if (btn !== 'ok') return;
+      thread.name = name;
       await post('main.persist');
     },
     tagKeyUp: async ev => {
@@ -258,6 +273,7 @@ export default class Main {
     toggleArchived: async (ev, x) => {
       ev?.stopPropagation?.();
       x.archived = !x.archived;
+      if (x.archived && this.state.thread === x) this.state.thread = null;
       await post('main.persist');
     },
     rm: async (ev, x) => {
