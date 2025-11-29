@@ -165,7 +165,8 @@ export default class Main {
         }
         let apiKey = this.state.model.startsWith('oai:') ? this.state.options.oaiKey : this.state.options.xaiKey;
         let res = await complete(logs, { simple: true, model: this.state.model, apiKey });
-        thread.logs.push({ id: null, res, id: crypto.randomUUID() });
+        if (!res.role) { console.error('Bad response:', res); console.info('Sent logs:', logs); return }
+        thread.logs.push({ id: null, ...res, id: crypto.randomUUID() });
         if (thread.logs.length <= 2) {
           threadtmp.busy = false;
           !thread.name && await post('main.suggestThreadName');
