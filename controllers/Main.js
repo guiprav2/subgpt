@@ -2,6 +2,7 @@ import complete, { listModels } from '../other/complete.js';
 import { marked } from 'https://esm.sh/marked';
 
 globalThis.markdown = x => marked.parse(x);
+function debounce(fn, wait = 200) { let t; return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait) } }
 
 export default class Main {
   state = {
@@ -38,6 +39,11 @@ export default class Main {
     },
     newThread: () => this.state.thread = {},
     openThread: x => this.state.thread = x,
+    scroll: debounce(x => {
+      let p = x.parentElement;
+      if ([...p.children].at(-1) !== x) return;
+      x.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    }, 200),
     cloneThread: async () => {
       let { thread } = this.state;
       let [btn, name] = await showModal('PromptDialog', { title: `Clone Thread`, placeholder: `New thread name`, value: thread.name, allowEmpty: false });
@@ -142,7 +148,7 @@ export default class Main {
       await post('main.complete');
     },
     toggleShowModels: () => this.state.tmp.showModels = !this.state.tmp.showModels,
-    changeModel: async x => { this.state.model = x; this.state.tmp.showModels = false; await post('main.persist') },
+    changeModel: async x => { this.state.options.model = x; this.state.tmp.showModels = false; await post('main.persist') },
     complete: async () => {
       let { thread } = this.state;
       this.state.tmp.threads ??= new Map();
@@ -218,7 +224,7 @@ export default class Main {
         console.log('addRes:', addRes.content);
         if (!addRes.content.includes('[NONE]')) {
           thread.tags ??= [];
-          for (let x of addRes.content.split(',').map(x => x.trim().toLowerCase().replaceAll(/[ _]+/g, '-'))) !thread.tags.includes(x) && thread.tags.push(x);
+          for (let x of addRes.content.split(',').map(x => x.trim().toLowerCase().replace(/^pull:/, '').replaceAll(/[ _]+/g, '-'))) !thread.tags.includes(x) && thread.tags.push(x);
         }
         d.update();
         /* FIXME:

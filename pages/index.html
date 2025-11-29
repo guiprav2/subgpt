@@ -506,12 +506,13 @@
                   <div
                     class="rounded-lg border border-[#dfe2e5] bg-white shadow flex justify-between group whitespace-pre-wrap p-4 self-end pb-3.5 gap-1 MsgBox hover:bg-gray-100 w-screen xl:max-w-3xl max-w-full relative mt-4"
                     wf-if="log.role === 'user'"
+                    wf-onattach="post('main.scroll', _1, log)"
                   >
                     <div class="flex-1 flex flex-col">
                       <div
                         wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing !== log"
                         wf-innerhtml="markdown(Array.isArray(log.content) ? log.content[0].text : log.content)"
-                        class="flex flex-col gap-3"
+                        class="flex flex-col gap-3 overflow-auto"
                       >
                         Log content...
                       </div>
@@ -568,8 +569,9 @@
                   <div
                     class="rounded-lg border border-[#dfe2e5] bg-white shadow flex justify-between group whitespace-pre-wrap p-4 max-w-3xl pb-3.5 gap-1 MsgBox hover:bg-gray-100 relative mt-4"
                     wf-if="log.role === 'assistant' &amp;&amp; log.content.trim()"
+                    wf-onattach="post('main.scroll', _1, log)"
                   >
-                    <div class="flex-1 flex flex-col">
+                    <div class="flex-1 flex flex-col overflow-auto">
                       <div
                         wf-if="state.main.tmp.threads?.get?.(state.main.thread)?.editing !== log"
                         wf-innerhtml="markdown(log.content)"
